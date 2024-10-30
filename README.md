@@ -1,38 +1,192 @@
-# sv
+# Onchain Components
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A proof-of-concept for storing UI components entirely on-chain using Tevm and Solidity.
 
-## Creating a project
+## Overview
 
-If you're seeing this, you've probably already done this step. Congrats!
+This project demonstrates how to store and render HTML components directly from the blockchain. It uses:
 
-```bash
-# create a new project in the current directory
-npx sv create
+- Tevm for local blockchain simulation
+- Solidity for smart contract storage
+- SvelteKit for the frontend
+- Anvil for local development
 
-# create a new project in my-app
-npx sv create my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## Project Structure
 
 ```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+src/
+├── lib/
+│   ├── HTMLStore.ts             # Contract interface
+│   ├── HTMLStoreClient.ts       # Client for interacting with the contract
+│   ├── chainConfigs.ts          # Chain configuration
+│   ├── contractABIs.ts          # Contract ABIs
+│   ├── newMemoryClient.ts       # Tevm memory client setup
+│   └── contracts/
+│       ├── src/
+│       │   └── HTMLStore.sol    # Solidity contract
+│       └── contractBytecodes.ts # Compiled contract bytecode
+├── routes/
+│   └── +page.svelte            # Main page component
+└── stores/
+    └── htmlStoreClient.ts      # Svelte store for client
 ```
 
-## Building
+## Setup
 
-To create a production version of your app:
+1. Install dependencies:
 
-```bash
-npm run build
+   ```bash
+   npm install
+   ```
+
+2. Install Foundry (for Anvil):
+
+    ```bash
+    curl -L https://foundry.paradigm.xyz | bash
+    foundryup
+    ```
+
+## Running the Project
+
+1. Start Anvil in one terminal:
+
+    ```bash
+    anvil
+    ```
+
+2. Start the development server in another terminal:
+
+    ```bash
+    npm run dev
+    ```
+
+3. Open `http://localhost:5173` in your browser
+
+The application will:
+
+- Deploy the HTMLStore contract to your local Anvil instance
+- Add example UI components
+- Render them in the browser
+
+## Smart Contract
+
+The `HTMLStore.sol` contract stores HTML elements and their attributes:
+
+```solidity
+contract HTMLStore {
+    struct HTMLElement {
+        string tagName;      // e.g., "div", "input", "p"
+        string innerHTML;    // inner content or value
+        mapping(string => string) attributes; // stores attributes like class, id, etc
+        bool exists;
+    }
+
+    mapping(uint256 => HTMLElement) public elements;
+    uint256 public elementCount;
+}
 ```
 
-You can preview the production build with `npm run preview`.
+## Client Usage
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+```typescript
+// Initialize with Anvil for development
+const client = new HTMLStoreClient("dev");
+
+// Add an element
+await client.addElement(
+    "div",
+    "Hello from the blockchain!",
+    ["class", "id"],
+    ["my-class", "my-id"]
+);
+
+// Get all elements
+const count = await client.getElementCount();
+for (let i = 0; i < count; i++) {
+    const element = await client.getElement(i);
+    const id = await client.getAttribute(i, "id");
+    const className = await client.getAttribute(i, "class");
+    // Use the element...
+}
+```
+
+## Supported Networks
+
+The project supports multiple networks through `chainConfigs.ts`:
+
+- `anvil`: Local development (default)
+- `base`: Base mainnet
+- `redstone`: Redstone chain
+- `zora`: Zora network
+
+## Example Components
+
+The project includes several demo components:
+
+- Modal/Dialog boxes
+- Forms with inputs
+- Cards with images
+- Navigation menus
+- Loading spinners
+
+Each component is stored entirely on-chain, including:
+
+- HTML structure
+- Content
+- Attributes
+- Styling classes
+
+## Development vs Production
+
+### Development Mode
+
+```typescript
+const client = new HTMLStoreClient("dev");
+```
+
+- Uses local Anvil blockchain
+- Uses test account (pre-funded)
+- Fast, free transactions
+
+### Production Mode
+
+```typescript
+const client = new HTMLStoreClient("prod");
+```
+
+- Connects to real networks
+- Requires real accounts and ETH
+- Real blockchain transactions
+
+## Troubleshooting
+
+1. Contract Deployment Issues:
+   - Ensure Anvil is running (`anvil` command)
+   - Check you're using "dev" mode
+   - Verify test account has ETH
+
+2. Component Display Issues:
+   - Check browser console for errors
+   - Verify contract deployment succeeded
+   - Check element count is > 0
+
+3. Network Issues:
+   - Verify Anvil is running on port 8545
+   - Check network configuration in chainConfigs.ts
+   - Ensure proper RPC URLs are set
+
+## Benefits
+
+1. **Versioning**: Components can be versioned by deploying new contracts
+2. **Reusability**: Components are accessible to any dApp
+3. **Composability**: Components can reference other on-chain components
+4. **Customization**: Components are customizable through attributes
+5. **Immutability**: Once deployed, components cannot be altered
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+MIT

@@ -10,6 +10,7 @@
     innerHTML: string;
     attributes: Record<string, string>;
     childElements: number[];
+    children?: UIElement[];
   }
 
   let elements: UIElement[] = [];
@@ -24,14 +25,15 @@
 
   async function fetchAllElements(ui: OnchainUI) {
     const count = await ui.getElementCount();
-    const allElements: UIElement[] = [];
+    const allElements: Record<number, UIElement> = {};
+    const rootElements: UIElement[] = [];
 
+    // First pass: create all elements
     for (let i = 0; i < count; i++) {
       try {
         const element = await ui.getElement(i);
         if (element.exists) {
           const attributes: Record<string, string> = {};
-          // Fetch common attributes
           try {
             const id = await ui.getAttribute(i, "id");
             const className = await ui.getAttribute(i, "class");
@@ -44,30 +46,42 @@
             );
           }
 
-          allElements.push({
+          allElements[i] = {
             id: i,
             tagName: element.tagName,
             innerHTML: element.innerHTML,
             attributes,
-            childElements: [], // We'll populate this next
-          });
+            childElements: [],
+            children: [],
+          };
         }
       } catch (elementError) {
         console.error(`Error fetching element ${i}:`, elementError);
       }
     }
 
-    // Now fetch child elements
-    for (const element of allElements) {
+    // Second pass: build the tree structure
+    for (const element of Object.values(allElements)) {
       try {
-        // Add child elements logic here if needed
-        console.log(`Element ${element.id}:`, element);
+        const childIds = await ui.getChildElements(element.id);
+        element.childElements = childIds;
+
+        // Add actual child elements
+        element.children = childIds
+          .map((id) => allElements[id])
+          .filter(Boolean);
+
+        // If this element has no parent, it's a root element
+        const parentId = await ui.getParentId(element.id);
+        if (parentId === 0 || !allElements[parentId]) {
+          rootElements.push(element);
+        }
       } catch (error) {
         console.error(`Error processing element ${element.id}:`, error);
       }
     }
 
-    return allElements;
+    return rootElements;
   }
 
   // function renderElement(element: UIElement): string {
@@ -83,70 +97,58 @@
     uiStore.set(ui);
 
     try {
-      // Create a form template
-      await ui.createTemplate(
-        "signupForm",
-        "form",
-        `<h2>Sign Up</h2>
-         <div class="form-group"></div>
-         <div class="button-group"></div>`,
-        ["class", "id"],
-        ["onchain-form", "signup-form"]
-      );
-
-      // Create the main form
+      // Create the main form with Tailwind classes
       const formId = await ui.addElement(
         "form",
         "", // Empty innerHTML as we'll add child elements
-        ["class", "id", "data-state"],
-        ["signup-form", "main-form", "initial"]
+        ["class"],
+        ["max-w-md mx-auto mt-8 space-y-6 bg-white p-8 rounded-xl shadow-lg"]
       );
 
-      // Add form fields as child elements
+      // Add form title
+      const titleId = await ui.addElement(
+        "h2",
+        "Sign Up",
+        ["class"],
+        ["text-2xl font-bold text-gray-900 text-center mb-8"]
+      );
+
+      // Add email field with Tailwind classes
       const emailFieldId = await ui.addElement(
         "div",
-        `<label for="email">Email</label>
-         <input type="email" id="email" placeholder="Enter your email">
-         <span class="error-message"></span>`,
+        `<label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+         <input type="email" id="email" placeholder="Enter your email" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+         <span class="mt-1 text-sm text-red-600"></span>`,
         ["class"],
-        ["form-group"]
+        ["space-y-1"]
       );
 
+      // Add password field with Tailwind classes
       const passwordFieldId = await ui.addElement(
         "div",
-        `<label for="password">Password</label>
-         <input type="password" id="password" placeholder="Choose a password">
-         <span class="error-message"></span>`,
+        `<label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+         <input type="password" id="password" placeholder="Choose a password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+         <span class="mt-1 text-sm text-red-600"></span>`,
         ["class"],
-        ["form-group"]
+        ["space-y-1"]
       );
 
+      // Add submit button with Tailwind classes
       const submitButtonId = await ui.addElement(
         "button",
         "Sign Up",
         ["type", "class"],
-        ["submit", "submit-button"]
+        [
+          "submit",
+          "w-full py-3 px-4 text-white bg-blue-600 hover:bg-blue-700 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200",
+        ]
       );
 
       // Add child elements to form
+      await ui.addChildElement(formId, titleId);
       await ui.addChildElement(formId, emailFieldId);
       await ui.addChildElement(formId, passwordFieldId);
       await ui.addChildElement(formId, submitButtonId);
-
-      // Add styles
-      await ui.addStyle(
-        formId,
-        ".signup-form",
-        ["display", "gap", "padding", "max-width", "margin"],
-        ["flex", "1rem", "2rem", "400px", "0 auto"]
-      );
-
-      await ui.addStyle(
-        formId,
-        ".form-group",
-        ["display", "flex", "flex-direction"],
-        ["flex", "1", "column"]
-      );
 
       // Add event handlers
       await ui.addEventHandler(
@@ -162,14 +164,6 @@
             },
           })
         )}`
-      );
-
-      // Set form layout
-      await ui.setLayout(
-        formId,
-        LAYOUT_TYPE_MAP.Flex,
-        ["direction", "align", "justify"],
-        ["column", "stretch", "start"]
       );
 
       // Initialize state
@@ -205,91 +199,16 @@
   <div class="form-container">
     {#each elements as element (element.id)}
       <svelte:element this={element.tagName} {...element.attributes}>
-        {@html element.innerHTML}
+        {#if element.children?.length}
+          {#each element.children as child (child.id)}
+            <svelte:element this={child.tagName} {...child.attributes}>
+              {@html child.innerHTML}
+            </svelte:element>
+          {/each}
+        {:else}
+          {@html element.innerHTML}
+        {/if}
       </svelte:element>
     {/each}
   </div>
 {/if}
-
-<style>
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-
-  body {
-    font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    color: #333;
-  }
-
-  .form-container {
-    width: 100%;
-    max-width: 400px;
-    padding: 2rem;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-
-  .test-class {
-    text-align: center;
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
-    color: #4a4a4a;
-  }
-
-  .form-group {
-    margin-bottom: 1.5rem;
-  }
-
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: bold;
-    font-size: 0.9rem;
-  }
-
-  input[type="email"],
-  input[type="password"] {
-    width: 100%;
-    padding: 0.75rem;
-    font-size: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    transition: border-color 0.3s;
-  }
-
-  input[type="email"]:focus,
-  input[type="password"]:focus {
-    border-color: #007bff;
-    outline: none;
-  }
-
-  .error-message {
-    color: #d9534f;
-    font-size: 0.85rem;
-    margin-top: 0.5rem;
-  }
-
-  .submit-button {
-    width: 100%;
-    padding: 0.75rem;
-    font-size: 1rem;
-    color: #fff;
-    background-color: #007bff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-
-  .submit-button:hover {
-    background-color: #0056b3;
-  }
-</style>

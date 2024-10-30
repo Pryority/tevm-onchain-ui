@@ -209,4 +209,18 @@ contract OnchainUI is IUIErrors {
         }
         elementLayouts[elementId] = Layout(layoutType, properties, values);
     }
+
+    function getChildElements(uint256 _id) public view returns (uint256[] memory) {
+        if (_id >= elementCount) {
+            revert ElementDoesNotExist(_id);
+        }
+        return elements[_id].childElements;
+    }
+
+    function getParentId(uint256 _id) public view returns (uint256) {
+        if (_id >= elementCount) {
+            revert ElementDoesNotExist(_id);
+        }
+        return elements[_id].parentId;
+    }
 }

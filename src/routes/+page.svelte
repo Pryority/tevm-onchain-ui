@@ -1,134 +1,133 @@
 <script lang="ts">
 </script>
 
-<main>
-  <h1>Onchain UI Components</h1>
+<h1 class="text-4xl font-bold text-gray-900 text-center mb-8">
+  Onchain UI Components
+</h1>
 
-  <section class="intro">
-    <p>
-      A proof-of-concept for storing UI components entirely on-chain using Tevm
-      and Solidity. This project demonstrates how to store and render HTML
-      components directly from the blockchain.
-    </p>
-  </section>
+<section class="mb-12">
+  <p class="text-xl text-gray-600 leading-relaxed">
+    A proof-of-concept for storing UI components entirely on-chain using Tevm
+    and Solidity. This project demonstrates how to store and render HTML
+    components with Tailwind classes directly from the blockchain.
+  </p>
+</section>
 
-  <section class="features">
-    <h2>How it Works</h2>
-    <ul>
-      <li>
-        <strong>Smart Contract Storage:</strong> UI components are stored in a Solidity
-        contract that manages HTML elements, attributes, and their relationships.
-      </li>
-      <li>
-        <strong>Local Development:</strong> Uses Tevm for local blockchain simulation
-        and Anvil for development.
-      </li>
-      <li>
-        <strong>Component Management:</strong> Supports nested elements, event handlers,
-        styles, and state management.
-      </li>
-      <li>
-        <strong>Dynamic Updates:</strong> Components can be updated and modified
-        through blockchain transactions.
-      </li>
-    </ul>
-  </section>
+<section class="mb-12">
+  <h2 class="text-3xl font-semibold text-gray-900 mb-6">How it Works</h2>
+  <ul class="space-y-4">
+    <li class="flex items-start">
+      <div class="flex-shrink-0">
+        <svg
+          class="h-6 w-6 text-blue-600"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M5 13l4 4L19 7"
+          />
+        </svg>
+      </div>
+      <p class="ml-3 text-lg text-gray-600">
+        <strong class="text-blue-600 font-medium"
+          >Smart Contract Storage:</strong
+        >
+        UI components and their Tailwind classes are stored in a Solidity contract.
+      </p>
+    </li>
+    <li class="flex items-start">
+      <div class="flex-shrink-0">
+        <svg
+          class="h-6 w-6 text-blue-600"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M5 13l4 4L19 7"
+          />
+        </svg>
+      </div>
+      <p class="ml-3 text-lg text-gray-600">
+        <strong class="text-blue-600 font-medium">Local Development:</strong>
+        Uses Tevm for local blockchain simulation and Anvil for development.
+      </p>
+    </li>
+    <li class="flex items-start">
+      <div class="flex-shrink-0">
+        <svg
+          class="h-6 w-6 text-blue-600"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M5 13l4 4L19 7"
+          />
+        </svg>
+      </div>
+      <p class="ml-3 text-lg text-gray-600">
+        <strong class="text-blue-600 font-medium">Component Management:</strong>
+        Supports nested elements, event handlers, and state management.
+      </p>
+    </li>
+    <li class="flex items-start">
+      <div class="flex-shrink-0">
+        <svg
+          class="h-6 w-6 text-blue-600"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M5 13l4 4L19 7"
+          />
+        </svg>
+      </div>
+      <p class="ml-3 text-lg text-gray-600">
+        <strong class="text-blue-600 font-medium">Tailwind Integration:</strong>
+        All styles are stored as Tailwind classes in the smart contract.
+      </p>
+    </li>
+  </ul>
+</section>
 
-  <section class="demo">
-    <h2>Live Demo</h2>
-    <p>
-      Check out our onchain form component demo. Every element, style, and
-      interaction is stored and managed through smart contracts.
-    </p>
-    <a href="/form" class="demo-button">View Form Demo</a>
-  </section>
-</main>
-
-<style>
-  main {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 2rem;
-    font-family:
-      system-ui,
-      -apple-system,
-      sans-serif;
-  }
-
-  h1 {
-    font-size: 2.5rem;
-    color: #1a1a1a;
-    margin-bottom: 2rem;
-    text-align: center;
-  }
-
-  h2 {
-    font-size: 1.8rem;
-    color: #2a2a2a;
-    margin: 2rem 0 1rem;
-  }
-
-  section {
-    margin-bottom: 3rem;
-  }
-
-  .intro p {
-    font-size: 1.2rem;
-    line-height: 1.6;
-    color: #4a4a4a;
-  }
-
-  .features ul {
-    list-style: none;
-    padding: 0;
-  }
-
-  .features li {
-    margin-bottom: 1rem;
-    line-height: 1.5;
-  }
-
-  .features strong {
-    color: #0066cc;
-  }
-
-  .demo {
-    background: #f5f5f5;
-    padding: 2rem;
-    border-radius: 8px;
-    text-align: center;
-  }
-
-  .demo p {
-    margin-bottom: 1.5rem;
-  }
-
-  .demo-button {
-    display: inline-block;
-    padding: 1rem 2rem;
-    background: #0066cc;
-    color: white;
-    text-decoration: none;
-    border-radius: 4px;
-    font-weight: 500;
-    transition: background-color 0.2s;
-  }
-
-  .demo-button:hover {
-    background: #0052a3;
-  }
-
-  @media (max-width: 600px) {
-    main {
-      padding: 1rem;
-    }
-
-    h1 {
-      font-size: 2rem;
-    }
-
-    .intro p {
-      font-size: 1.1rem;
-    }
-  }
-</style>
+<section class="bg-gray-50 rounded-xl p-8 text-center">
+  <h2 class="text-3xl font-semibold text-gray-900 mb-4">Live Demo</h2>
+  <p class="text-xl text-gray-600 mb-6">
+    Check out our onchain form component demo. Every element and its Tailwind
+    classes are stored and managed through smart contracts.
+  </p>
+  <a
+    href="/form"
+    class="inline-flex items-center px-6 py-3 border border-transparent text-lg font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+  >
+    View Form Demo
+    <svg
+      class="ml-2 -mr-1 w-5 h-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M9 5l7 7-7 7"
+      />
+    </svg>
+  </a>
+</section>

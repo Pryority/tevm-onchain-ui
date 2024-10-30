@@ -9,4 +9,6 @@ export const ONCHAIN_UI_ABI = [
 	"function createTemplate(string memory name, string memory tagName, string memory baseHTML, string[] memory attrNames, string[] memory attrValues) public",
 	"function updateState(string memory name, bytes memory value) public",
 	"function setLayout(uint256 elementId, uint8 layoutType, string[] memory properties, string[] memory values) public",
+	"function getChildElements(uint256 _id) public view returns (uint256[] memory)",
+	"function getParentId(uint256 _id) public view returns (uint256)",
 ] as const;

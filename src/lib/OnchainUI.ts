@@ -437,6 +437,53 @@ export class OnchainUI {
 		}
 	}
 
+	async getChildElements(id: number): Promise<number[]> {
+		try {
+			const address = await this.ensureDeployed();
+			const result = await this.client.tevmContract({
+				to: address,
+				abi: this.ui.undeployedContract.abi,
+				functionName: "getChildElements",
+				args: [BigInt(id)],
+			});
+
+			if (result.errors) {
+				throw new Error(result.errors[0].message);
+			}
+
+			if (!result.data) {
+				return [];
+			}
+
+			// Convert BigInts to numbers
+			return (result.data as bigint[]).map((n) => Number(n));
+		} catch (error) {
+			console.error("Error getting child elements:", error);
+			throw error;
+		}
+	}
+
+	async getParentId(id: number): Promise<number> {
+		try {
+			const address = await this.ensureDeployed();
+			const result = await this.client.tevmContract({
+				to: address,
+				abi: this.ui.undeployedContract.abi,
+				functionName: "getParentId",
+				args: [BigInt(id)],
+			});
+
+			if (result.errors) {
+				throw new Error(result.errors[0].message);
+			}
+
+			return Number(result.data);
+		} catch (error) {
+			console.error("Error getting parent ID:", error);
+			throw error;
+		}
+	}
+
 	private async ensureDeployed() {
 		try {
 			await Promise.all([this.deploymentPromise, this.initializationPromise]);

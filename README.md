@@ -16,19 +16,19 @@ This project demonstrates how to store and render HTML components directly from 
 ```bash
 src/
 ├── lib/
-│   ├── HTMLStore.ts             # Contract interface
-│   ├── HTMLStoreClient.ts       # Client for interacting with the contract
+│   ├── OnchainUI.ts             # Contract interface
+│   ├── OnchainUIClient.ts       # Client for interacting with the contract
 │   ├── chainConfigs.ts          # Chain configuration
 │   ├── contractABIs.ts          # Contract ABIs
 │   ├── newMemoryClient.ts       # Tevm memory client setup
 │   └── contracts/
 │       ├── src/
-│       │   └── HTMLStore.sol    # Solidity contract
+│       │   └── OnchainUI.sol    # Solidity contract
 │       └── contractBytecodes.ts # Compiled contract bytecode
 ├── routes/
 │   └── +page.svelte            # Main page component
 └── stores/
-    └── htmlStoreClient.ts      # Svelte store for client
+    └── uiClient.ts      # Svelte store for client
 ```
 
 ## Setup
@@ -64,16 +64,16 @@ src/
 
 The application will:
 
-- Deploy the HTMLStore contract to your local Anvil instance
+- Deploy the OnchainUI contract to your local Anvil instance
 - Add example UI components
 - Render them in the browser
 
 ## Smart Contract
 
-The `HTMLStore.sol` contract stores HTML elements and their attributes:
+The `OnchainUI.sol` contract stores HTML elements and their attributes:
 
 ```solidity
-contract HTMLStore {
+contract OnchainUI {
     struct HTMLElement {
         string tagName;      // e.g., "div", "input", "p"
         string innerHTML;    // inner content or value
@@ -90,7 +90,7 @@ contract HTMLStore {
 
 ```typescript
 // Initialize with Anvil for development
-const client = new HTMLStoreClient("dev");
+const client = new OnchainUIClient("dev");
 
 // Add an element
 await client.addElement(
@@ -141,7 +141,7 @@ Each component is stored entirely on-chain, including:
 ### Development Mode
 
 ```typescript
-const client = new HTMLStoreClient("dev");
+const client = new OnchainUIClient("dev");
 ```
 
 - Uses local Anvil blockchain
@@ -151,7 +151,7 @@ const client = new HTMLStoreClient("dev");
 ### Production Mode
 
 ```typescript
-const client = new HTMLStoreClient("prod");
+const client = new OnchainUIClient("prod");
 ```
 
 - Connects to real networks

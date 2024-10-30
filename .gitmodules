@@ -1,0 +1,7 @@
+[submodule "src/lib/contracts/lib/forge-std"]
+	path = src/lib/contracts/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+
+[submodule "src/lib/contracts/lib/ds-test"]
+	path = src/lib/contracts/lib/ds-test
+	url = https://github.com/dapphub/ds-test

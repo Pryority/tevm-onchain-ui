@@ -1,4 +1,4 @@
-# Onchain Components
+# Onchain UI Components
 
 A proof-of-concept for storing UI components entirely on-chain using Tevm and Solidity.
 
@@ -10,34 +10,41 @@ This project demonstrates how to store and render HTML components directly from 
 - Solidity for smart contract storage
 - SvelteKit for the frontend
 - Anvil for local development
+- Tailwind CSS for styling
 
 ## Project Structure
 
 ```bash
 src/
 ├── lib/
-│   ├── OnchainUI.ts             # Contract interface
-│   ├── OnchainUIClient.ts       # Client for interacting with the contract
-│   ├── chainConfigs.ts          # Chain configuration
-│   ├── contractABIs.ts          # Contract ABIs
-│   ├── newMemoryClient.ts       # Tevm memory client setup
-│   └── contracts/
-│       ├── src/
-│       │   └── OnchainUI.sol    # Solidity contract
-│       └── contractBytecodes.ts # Compiled contract bytecode
+│   ├── contracts/
+│   │   ├── src/
+│   │   │   ├── OnchainUI.sol        # Main contract
+│   │   │   └── interfaces/
+│   │   │       └── IUIErrors.sol     # Contract errors
+│   │   └── contractBytecodes.ts      # Compiled contract bytecode
+│   ├── OnchainUI.ts                  # Contract interface
+│   ├── OnchainUIABI.ts              # Contract ABI
+│   ├── UIContractHandler.ts          # Contract deployment handler
+│   ├── chainConfigs.ts              # Chain configuration
+│   ├── client.ts                    # Tevm client setup
+│   └── types.ts                     # TypeScript types
 ├── routes/
-│   └── +page.svelte            # Main page component
+│   ├── +page.svelte                # Landing page
+│   └── form/
+│       └── +page.svelte            # Form demo page
 └── stores/
-    └── uiClient.ts      # Svelte store for client
+    ├── uiStore.ts                  # UI state store
+    └── clientStore.ts              # Client state store
 ```
 
 ## Setup
 
 1. Install dependencies:
 
-   ```bash
-   npm install
-   ```
+    ```bash
+    npm install
+    ```
 
 2. Install Foundry (for Anvil):
 
@@ -46,7 +53,7 @@ src/
     foundryup
     ```
 
-## Running the Project
+## Development Workflow
 
 1. Start Anvil in one terminal:
 
@@ -60,128 +67,114 @@ src/
     npm run dev
     ```
 
-3. Open `http://localhost:5173` in your browser
+3. After making changes to the contract (OnchainUI.sol) or ABI (OnchainUIABI.ts), update the bytecodes:
 
-The application will:
+    ```bash
+    bun run update-bytecodes
+    ```
 
-- Deploy the OnchainUI contract to your local Anvil instance
-- Add example UI components
-- Render them in the browser
+4. Restart the dev server to use the new bytecodes:
 
-## Smart Contract
-
-The `OnchainUI.sol` contract stores HTML elements and their attributes:
-
-```solidity
-contract OnchainUI {
-    struct HTMLElement {
-        string tagName;      // e.g., "div", "input", "p"
-        string innerHTML;    // inner content or value
-        mapping(string => string) attributes; // stores attributes like class, id, etc
-        bool exists;
-    }
-
-    mapping(uint256 => HTMLElement) public elements;
-    uint256 public elementCount;
-}
+```bash
+bun run dev
 ```
 
-## Client Usage
+## Smart Contract Features
+
+The `OnchainUI.sol` contract supports:
+
+- HTML elements with attributes and inner content
+- Parent-child relationships between elements
+- Event handlers with payloads
+- Style management
+- Component templates
+- State management
+- Component libraries
+- Layout system
+
+## Component Creation
 
 ```typescript
 // Initialize with Anvil for development
-const client = new OnchainUIClient("dev");
+const ui = new OnchainUI("dev");
 
-// Add an element
-await client.addElement(
-    "div",
-    "Hello from the blockchain!",
-    ["class", "id"],
-    ["my-class", "my-id"]
+// Create a form with Tailwind classes
+const formId = await ui.addElement(
+    "form",
+    "",
+    ["class"],
+    ["max-w-md mx-auto mt-8 space-y-6 bg-white p-8 rounded-xl shadow-lg"]
 );
 
-// Get all elements
-const count = await client.getElementCount();
-for (let i = 0; i < count; i++) {
-    const element = await client.getElement(i);
-    const id = await client.getAttribute(i, "id");
-    const className = await client.getAttribute(i, "class");
-    // Use the element...
-}
+// Add child elements
+const titleId = await ui.addElement(
+    "h2",
+    "Sign Up",
+    ["class"],
+    ["text-2xl font-bold text-gray-900 text-center mb-8"]
+);
+
+// Add parent-child relationship
+await ui.addChildElement(formId, titleId);
 ```
 
-## Supported Networks
+## Styling
 
-The project supports multiple networks through `chainConfigs.ts`:
-
-- `anvil`: Local development (default)
-- `base`: Base mainnet
-- `redstone`: Redstone chain
-- `zora`: Zora network
-
-## Example Components
-
-The project includes several demo components:
-
-- Modal/Dialog boxes
-- Forms with inputs
-- Cards with images
-- Navigation menus
-- Loading spinners
-
-Each component is stored entirely on-chain, including:
-
-- HTML structure
-- Content
-- Attributes
-- Styling classes
-
-## Development vs Production
-
-### Development Mode
+All styles are stored as Tailwind classes in the contract:
 
 ```typescript
-const client = new OnchainUIClient("dev");
+await ui.addElement(
+    "button",
+    "Sign Up",
+    ["class"],
+    ["w-full py-3 px-4 text-white bg-blue-600 hover:bg-blue-700 rounded-md"]
+);
 ```
 
-- Uses local Anvil blockchain
-- Uses test account (pre-funded)
-- Fast, free transactions
-
-### Production Mode
+## Event Handling
 
 ```typescript
-const client = new OnchainUIClient("prod");
+await ui.addEventHandler(
+    buttonId,
+    "click",
+    "validateForm",
+    `0x${stringToHex(JSON.stringify({
+        requiredFields: ["email", "password"]
+    }))}`
+);
 ```
 
-- Connects to real networks
-- Requires real accounts and ETH
-- Real blockchain transactions
+## State Management
+
+```typescript
+await ui.updateState(
+    "formData",
+    `0x${stringToHex(JSON.stringify({
+        email: "",
+        password: "",
+        errors: {}
+    }))}`
+);
+```
 
 ## Troubleshooting
 
 1. Contract Deployment Issues:
    - Ensure Anvil is running (`anvil` command)
    - Check you're using "dev" mode
+   - Run `bun run update-bytecodes` after contract changes
    - Verify test account has ETH
 
 2. Component Display Issues:
    - Check browser console for errors
    - Verify contract deployment succeeded
    - Check element count is > 0
+   - Ensure parent-child relationships are set
 
 3. Network Issues:
    - Verify Anvil is running on port 8545
    - Check network configuration in chainConfigs.ts
    - Ensure proper RPC URLs are set
-
-## Benefits
-
-1. **Versioning**: Components can be versioned by deploying new contracts
-2. **Reusability**: Components are accessible to any dApp
-3. **Composability**: Components can reference other on-chain components
-4. **Customization**: Components are customizable through attributes
-5. **Immutability**: Once deployed, components cannot be altered
 
 ## Contributing
 
